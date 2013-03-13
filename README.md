@@ -1,1 +1,5 @@
-A Sublime Text plugin to scan for dojo.provide calls in JavaScript files to ease adding dojo.require calls. Not quite ready for prime time.
+Dojo Modules
+============
+
+Adds commands to insert full Dojo module and class names, for example, `com.company.spam.Eggs`. Dojo modules are discovered by parsing JavaScript files for `dojo.require` calls.
+
