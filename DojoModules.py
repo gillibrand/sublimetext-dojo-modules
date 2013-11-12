@@ -41,8 +41,22 @@ class InsertDojoModuleCommand(sublime_plugin.TextCommand):
 		def on_done(i):
 			if i == -1: return
 			for region in self.view.sel():
-				self.view.insert(edit, region.b, modules[i])
+				self.view.run_command('insert_text', {
+						'point': region.b,
+						'text': modules[i]
+					})
 		self.view.window().show_quick_panel(modules, on_done)
+
+
+class InsertTextCommand(sublime_plugin.TextCommand):
+	"""Command just to insert text into a view.
+
+	Work around for SublimeText 3 changes the invalidate the Edit object after
+	`run` which means it can't easily be used in callbacks.
+	"""
+	
+	def run(self, edit, point, text):
+		self.view.insert(edit, point, text)
 
 
 class RequireDojoModuleCommand(sublime_plugin.TextCommand):
@@ -58,9 +72,13 @@ class RequireDojoModuleCommand(sublime_plugin.TextCommand):
 		modules = sorted(set(module_cache.modules))
 		def on_done(i):
 			if i == -1: return
+			comment = settings.get('require_comment') or ""
+			message = ("dojo.require('%s');" + comment) % (modules[i])
 			for region in self.view.sel():
-				comment = settings.get('require_comment') or ""
-				self.view.insert(edit, region.b, ("dojo.require('%s');" + comment) % (modules[i]))
+				self.view.run_command('insert_text', {
+						'point': region.b,
+						'text': message
+					})
 		self.view.window().show_quick_panel(modules, on_done)
 
 
