@@ -1,5 +1,5 @@
 import sublime_plugin, sublime
-import os, os.path, re
+import os, os.path, re, pprint
 try:
 	import modulecache
 except:
@@ -7,7 +7,7 @@ except:
 
 module_cache = modulecache.ModuleCache()
 settings_file = 'DojoModules.sublime-settings'
-settings = sublime.load_settings(settings_file)
+settings = None
 
 def load_dojo_module_cache():
 	search_paths = settings.get('search_paths')
@@ -17,8 +17,12 @@ def load_dojo_module_cache():
 
 	module_cache.scan_all_paths(search_paths)
 
-settings.add_on_change('search_paths', load_dojo_module_cache)
-load_dojo_module_cache()
+def init_globals():
+	global settings
+	if not settings:
+		settings = sublime.load_settings(settings_file)
+		settings.add_on_change('search_paths', load_dojo_module_cache)
+		load_dojo_module_cache()
 
 
 class InsertDojoModuleCommand(sublime_plugin.TextCommand):
@@ -29,6 +33,9 @@ class InsertDojoModuleCommand(sublime_plugin.TextCommand):
 	relying on completions.
 
 	"""
+	def __init__(self, view):
+		super(InsertDojoModuleCommand, self).__init__(view)
+		init_globals()
 
 	def is_enabled(self):
 		for region in self.view.sel():
@@ -55,6 +62,10 @@ class InsertTextCommand(sublime_plugin.TextCommand):
 	`run` which means it can't easily be used in callbacks.
 	"""
 	
+	def __init__(self, view):
+		super(InsertTextCommand, self).__init__(view)
+		init_globals()
+
 	def run(self, edit, point, text):
 		self.view.insert(edit, point, text)
 
