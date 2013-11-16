@@ -24,6 +24,50 @@ def init_globals():
 		settings.add_on_change('search_paths', load_dojo_module_cache)
 		load_dojo_module_cache()
 
+def init_regexs():
+	global prefixes_re
+	global ignore_paths_re
+	prefixes = settings.get("plugin_prefixes")
+	prefixes_re = re.compile('|'.join(prefixes))
+	ignore_paths = settings.get("ignore_paths")
+	if not ignore_paths:
+		ignore_paths_re = re.compile("a^")
+	else:
+		ignore_paths_re = re.compile('|'.join(ignore_paths) + '\\b')
+
+def process_file_name(fileName):
+	paths = fileName.split('\\')
+	processed = "";
+	for path in paths:
+		print("Path: " + path)
+		print("Processed: " + processed)
+		if not processed:
+			if prefixes_re.match(path):
+				processed += path
+		else:
+			if ignore_paths_re.match(path):
+				continue
+			processed += "." + path
+		print("End loop: " + processed)
+	return processed
+
+class DojoProvideCommand(sublime_plugin.TextCommand):
+
+	def __init__(self, view):
+		super(DojoProvideCommand, self).__init__(view)
+		init_globals()
+		init_regexs()
+
+	def run(self, edit):
+		print("running")
+		fileName = self.view.file_name()
+		jsIndex = fileName.find('.js');
+		if (jsIndex != len(fileName)-3):
+			return;
+		else:
+			fileName = fileName.rstrip('.js')
+		fileName = process_file_name(fileName)
+		self.view.insert(edit, 0, "dojo.provide(\"" + fileName + "\");" + settings.get("provide_comment"))		
 
 class InsertDojoModuleCommand(sublime_plugin.TextCommand):
 	"""Shows quick panel to insert a Dojo module name.
