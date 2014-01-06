@@ -1,4 +1,4 @@
-import re, os, itertools, logging, threading, functools
+import re, os, itertools, logging, threading, functools, sublime
 
 def log(message):
 	print('Dojo Modules:', message)
@@ -66,11 +66,16 @@ class ModuleCache (object):
 			log('WARNING: Search path not found: ' + path)
 			return
 
+		visited_paths = []
 		for dirpath, dirnames, filenames in os.walk(path):
-			print('visit', dirpath)
+			# print('visit', dirpath)
+			visited_paths.append(dirpath)
 			for name in filenames:
 				if '.js' == os.path.splitext(name)[1]:
 					self.scan_file_for_requires(os.path.join(dirpath, name))
+		joined_paths = '", "'.join(visited_paths)
+		log('For root path "%s", scanned these directories: "%s"' % (path, joined_paths))
+		# sublime.status_message('Dojo Modules: Scanned ' + path)
 
 	def scan_all_paths(self, search_paths):
 		"""Scans all given paths for `dojo.provide` statments and caches them all.
@@ -91,16 +96,25 @@ class ModuleCache (object):
 		# It's possible that there could be old threads still running, but it
 		# should be really rare and there's no trivial way to stop them anyway
 		# so just ignore them.
+		lock = threading.Lock()
+		semaphore = threading.Semaphore(len(search_paths))
 		threads = []
 		for path in search_paths:
-			print('for path ' + path)
-			self.scan_path(path)
-		# 	t = threading.Thread(target=functools.partial(self.scan_path, path))
-		# 	t.start()
-		# 	threads.append(t)
-		# for t in threads:
-		# 	# It's nice to do this inline so we don't show partial results,
-		# 	# but if we wait too long it can block the GUI. Usually this is
-		# 	# pretty fast, but if there are huge hierarchies we won't wait
-		# 	# very long for them (they'll finish eventually.)
-		# 	t.join(5)
+			log('Starting Dojo module scan thread for "' + path + '".')
+			# self.scan_path(path)
+			semaphore.acquire()
+			def run():
+				self.scan_path(path)
+				semaphore.release()
+			# t = threading.Thread(target=functools.partial(self.scan_path, path))
+			t = threading.Thread(target=run)
+			t.start()
+			threads.append(t)
+
+		def wait_and_log():
+			log('Waiting for a path scans to complete...')
+			sublime.status_message('Dojo Modules: Scanning all paths...')
+			with semaphore:
+				log('Done. All paths were scanned.')
+				sublime.status_message('Dojo Modules: Done scanning paths. Ready to go.')
+		threading.Thread(target=wait_and_log).start()
