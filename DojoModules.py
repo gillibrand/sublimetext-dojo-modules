@@ -59,7 +59,6 @@ class DojoProvideCommand(sublime_plugin.TextCommand):
 		init_regexs()
 
 	def run(self, edit):
-		print("running")
 		fileName = self.view.file_name()
 		jsIndex = fileName.find('.js');
 		if (jsIndex != len(fileName)-3):
