@@ -32,6 +32,4 @@ Compatible with Sublime Text 2 and 3. Has had limited testing.
 Performance
 -----------
 
-This plugin opens and reads all the JavaScript files that it finds in its search paths. This can cause Sublime Text to pause for several seconds while starting up if there are a large number of files to read. You may need to limit the number of search paths used if this time is too long.
-
-Future versions will likely offload this work to a background thread to improve perceived performance. Sublime Text 3 may appear faster since its plugins are loaded into another process.
+This package opens and reads all the JavaScript files that it finds in its search paths. This used to cause Sublime Text to pause for several seconds while starting up when there were a large number of files to read. Files are now scanned in background threads to avoid any startup delays, but that means all modules are not necessarily immediately available after startup. Once files have been scanned, a "done" message is shown in the Sublime Text status bar.
