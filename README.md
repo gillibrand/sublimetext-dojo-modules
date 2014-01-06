@@ -27,7 +27,7 @@ You can insert the found module names as just he module name, or wrapped in a `d
 Compatibility
 -------------
 
-Compatible with Sublime Text 2 and 3. Has had limited testing.
+Works with Sublime Text 3. May work with Sublime Text 2 still, but is not be actively used or tested there anymore.
 
 Performance
 -----------
