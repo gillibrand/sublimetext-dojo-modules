@@ -18,7 +18,7 @@ Either edit the included `DojoModules.sublime-settings` file or (preferred) copy
 Usage
 -----
 
-You can insert the found module names as just he module name, or wrapped in a `dojo.require`. Both commands show a quick panel of all discovered module names to pick from.
+You can insert the found module names as just the module name, or wrapped in a `dojo.require`. Both commands show a quick panel of all discovered module names to pick from.
 
 
 	Insert `dojo.require`			Ctrl+Shift+O
